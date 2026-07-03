@@ -308,12 +308,28 @@ class RefreshTokenView(APIView):
         set_access_cookie(response, new_access_token)
         return response
 
-
+from Application.UserServices.user_models import (
+    UserOrderModel
+)
+from django.db.models import Sum
 
 class CheckLoginView(APIView):
     permission_classes = [AllowAny]
     def get(self, request):
         user = get_user_from_request(request)
+
+        total_orders = 0
+        total_delivered = 0
+        total_progress = 0
+        total_spend = 0
+
+        orders = UserOrderModel.objects.filter(user=user)
+        
+        total_orders = orders.count()
+        total_delivered = orders.filter(status="Delivered").count()
+        total_progress = orders.filter(status="In-Progress").count()
+        total_spend = orders.aggregate(total_spend=Sum('total_value'))['total_spend']
+        total_spend = total_spend if total_spend else 0
 
         # ✅ Step 1 & 2: Check if user is authenticated (via request or cookies)
         if not user or isinstance(user, AnonymousUser) or not user.is_authenticated:
@@ -339,6 +355,10 @@ class CheckLoginView(APIView):
             'username': user.username,
             'email': user.email,
             'phone': getattr(user, 'phone', None),
+            'total_orders': total_orders,
+            'total_delivered': total_delivered,
+            'total_progress': total_progress,
+            'total_spend': total_spend,
         }
 
         return Response({

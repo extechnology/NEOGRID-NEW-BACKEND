@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models import Prefetch
 
 from rest_framework import generics
 
@@ -18,19 +19,32 @@ from .user_models import (
     UserAddress,
     UserCartModel,
     UserCartItemModel,
-    UserOrderModel
+    UserOrderModel,
+    UserOrderItemModel,
 )
 
 from .user_serializers import (
     UserAddressSerializer,
     UserCartModelSerializer,
     UserCartItemModelSerializer,
-    UserOrderModelSerializer
+    UserOrderModelSerializer,
+    VerifyPaymentSerializer,
+
+    UserAddressSerializerForListOrder,
+    OrderItemSerializerForListOrder,
+    OrderProductSerializerForListOrder,
+    UserOrderDetailSerializerForListOrder,
 )
 
+from django.conf import settings
+import razorpay
+
 from Application.ProductServices.product_models import (
-    Product
+    Product,
+    ProductImages
 )
+from .user_utils import generate_invoice_pdf
+from .user_mails import send_order_created_email, send_payment_failed_email
 
 
 class UserCartListView(generics.ListAPIView):
@@ -58,11 +72,10 @@ class UserCartListView(generics.ListAPIView):
             total_discount = orginal_amount - total_amount
 
             shipping_charge = 0
+            for item in UserCartItemModel.objects.filter(cart=cart):
+                shipping_charge += item.product.shipping_charge
 
-            if total_amount >= 1000:
-                shipping_charge = 0
-            else:
-                shipping_charge = 100
+            total_amount += shipping_charge
 
             return Response({
                 "message": "Cart items retrieved successfully",
@@ -317,3 +330,182 @@ class DeleteUserAddressView(generics.DestroyAPIView):
                 "message": str(e),
                 "data": []
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class CreateOrderView(APIView):
+    permission_classes = [IsUserAuthenticated]
+
+    def post(self, request):
+        try:
+            address_id = request.data.get('address_id')
+
+            cart = UserCartModel.objects.get(user=request.user)
+            items = UserCartItemModel.objects.filter(cart=cart)
+
+            total_value = request.data.get('total_value')
+
+            print("************************************")
+            print("cart",cart)
+            print(total_value)
+            print(request.data)
+            print(address_id)
+            print("************************************")
+
+            if not items:
+                return Response({
+                    "status": status.HTTP_400_BAD_REQUEST,
+                    "message": "Cart is empty.",
+                    "data": []
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            if not address_id or not total_value:
+                return Response({
+                    "status": status.HTTP_400_BAD_REQUEST,
+                    "message": "address_id and total_value are required.",
+                    "data": []
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            address = UserAddress.objects.filter(unique_id=address_id, user=request.user).first()
+            if not address:
+                return Response({
+                    "status": status.HTTP_404_NOT_FOUND,
+                    "message": "Address not found.",
+                    "data": []
+                }, status=status.HTTP_404_NOT_FOUND)
+
+            # Initialize Razorpay Client
+            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+            # Create Order in Razorpay
+            # amount is in paise, so multiply by 100
+            payment_amount = int(float(total_value) * 100)
+            data = {
+                "amount": payment_amount,
+                "currency": "INR",
+                "payment_capture": "1"
+            }
+            razorpay_order = client.order.create(data=data)
+
+            # Create Local Order
+            order = UserOrderModel.objects.create(
+                user=request.user,
+                address=address,
+                total_value=total_value,
+                razorpay_order_id=razorpay_order['id'],
+                status='PENDING'
+            )
+            
+            for i in items:
+                UserOrderItemModel.objects.create(
+                    order=order,
+                    product=i.product,
+                    quantity=i.quantity
+                )
+
+            return Response({
+                "status": status.HTTP_201_CREATED,
+                "message": "Order created successfully",
+                "data": {
+                    "order_id": order.order_id,
+                    "razorpay_order_id": razorpay_order['id'],
+                    "amount": payment_amount,
+                    "currency": "INR",
+                    "key_id":settings.RAZORPAY_KEY_ID
+                }
+            }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({
+                "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
+                "message": str(e),
+                "data": []
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class VerifyOrderView(APIView):
+    permission_classes = [IsUserAuthenticated]
+
+    def post(self, request):
+        try:
+            serializer = VerifyPaymentSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response({
+                    "status": status.HTTP_400_BAD_REQUEST,
+                    "message": "Validation Error",
+                    "data": serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            razorpay_order_id = serializer.validated_data['razorpay_order_id']
+            razorpay_payment_id = serializer.validated_data['razorpay_payment_id']
+            razorpay_signature = serializer.validated_data['razorpay_signature']
+
+            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+            params_dict = {
+                'razorpay_order_id': razorpay_order_id,
+                'razorpay_payment_id': razorpay_payment_id,
+                'razorpay_signature': razorpay_signature
+            }
+
+            order = UserOrderModel.objects.filter(razorpay_order_id=razorpay_order_id, user=request.user).first()
+            if not order:
+                return Response({
+                    "status": status.HTTP_404_NOT_FOUND,
+                    "message": "Order not found",
+                    "data": []
+                }, status=status.HTTP_404_NOT_FOUND)
+
+            try:
+                client.utility.verify_payment_signature(params_dict)
+            except razorpay.errors.SignatureVerificationError:
+                send_payment_failed_email(order)
+                return Response({
+                    "status": status.HTTP_400_BAD_REQUEST,
+                    "message": "Payment verification failed",
+                    "data": []
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            order.razorpay_payment_id = razorpay_payment_id
+            order.razorpay_signature = razorpay_signature
+            order.status = 'CONFIRMED'
+            order.save()
+
+            cart = UserCartModel.objects.get(user=request.user)
+            items = UserCartItemModel.objects.filter(cart=cart)
+            items.delete()
+            
+            # Generate and save invoice
+            generate_invoice_pdf(order)
+            
+            # Send confirmation email
+            send_order_created_email(order)
+
+            return Response({
+                "status": status.HTTP_200_OK,
+                "message": "Payment verified and order updated successfully",
+                "data": UserOrderModelSerializer(order).data
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({
+                "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
+                "message": str(e),
+                "data": []
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class UserOrderDetailAPIView(generics.ListAPIView):
+    serializer_class = UserOrderDetailSerializerForListOrder
+    permission_classes = [IsUserAuthenticated]
+    pagination_class = None
+
+    def get_queryset(self):
+        return (
+            UserOrderModel.objects.filter(user=self.request.user).order_by("-id")
+            .select_related("address")
+            .prefetch_related(
+                Prefetch(
+                    "items__product__images",
+                    queryset=ProductImages.objects.order_by("id"),
+                )
+            )
+        )

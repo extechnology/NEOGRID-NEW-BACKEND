@@ -4,7 +4,8 @@ from .user_models import (
     UserCartModel,
     UserCartItemModel,
     UserAddress,
-    UserOrderModel
+    UserOrderModel,
+    UserOrderItemModel
 )
 
 from Application.ProductServices.product_models import (
@@ -64,10 +65,26 @@ class UserCartItemModelSerializer(serializers.ModelSerializer):
 
 class UserCartModelSerializer(serializers.ModelSerializer):
     items = UserCartItemModelSerializer(many=True, read_only=True)
+    total_value = serializers.SerializerMethodField()
 
     class Meta:
         model = UserCartModel
         fields = ['id', 'user', 'items', 'total_value', 'created_at', 'updated_at']
+
+    def get_total_value(self, obj):
+        total_amount = 0
+        cart = obj
+        total_shipping = 0
+        for item in UserCartItemModel.objects.filter(cart=cart):
+            if item.product.discount_price > 0:
+                total_amount += item.product.discount_price * item.quantity
+            else:
+                total_amount += item.product.price * item.quantity
+            total_shipping += item.product.shipping_charge
+        total_amount += total_shipping    
+        return total_amount
+
+
 
 class UserAddressSerializer(serializers.ModelSerializer):
     class Meta:
@@ -75,7 +92,81 @@ class UserAddressSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['user', 'unique_id']
 
+class UserOrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserOrderItemModel
+        fields = '__all__'
+
+
 class UserOrderModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserOrderModel
         fields = '__all__'
+
+class VerifyPaymentSerializer(serializers.Serializer):
+    razorpay_order_id = serializers.CharField(max_length=100)
+    razorpay_payment_id = serializers.CharField(max_length=100)
+    razorpay_signature = serializers.CharField(max_length=200)
+
+
+
+class UserAddressSerializerForListOrder(serializers.ModelSerializer):
+    class Meta:
+        model = UserAddress
+        fields = "__all__"
+
+
+class OrderProductSerializerForListOrder(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Product
+        fields = [
+            "id",
+            "name",
+            "model_type",
+            "model_number",
+            "price",
+            "discount_percentage",
+            "discount_price",
+            "shipping_charge",
+            "image",
+        ]
+
+    def get_image(self, obj):
+        image = obj.images.first()
+        request = self.context.get("request")
+
+        if image and image.image:
+            return request.build_absolute_uri(image.image.url)
+        return None
+
+
+class OrderItemSerializerForListOrder(serializers.ModelSerializer):
+    product = OrderProductSerializerForListOrder(read_only=True)
+
+    class Meta:
+        model = UserOrderItemModel
+        fields = [
+            "id",
+            "quantity",
+            "price_at_addition",
+            "product",
+        ]
+
+
+class UserOrderDetailSerializerForListOrder(serializers.ModelSerializer):
+    address = UserAddressSerializerForListOrder(read_only=True)
+    items = OrderItemSerializerForListOrder(many=True, read_only=True)
+
+    class Meta:
+        model = UserOrderModel
+        fields = [
+            "id",
+            "order_id",
+            "status",
+            "total_value",
+            "created_at",
+            "address",
+            "items",
+        ]
