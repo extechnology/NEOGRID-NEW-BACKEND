@@ -3,3 +3,4 @@ from .ProductServices.product_admin import *
 from .UIServices.ui_admins import *
 from .UserServices.user_admins import *
 from .ProjectGalleryServices.project_admins import *
+from .DealerServices.dealer_admins import *

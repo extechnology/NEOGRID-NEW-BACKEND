@@ -25,6 +25,8 @@ urlpatterns = [
     path('grappelli/', include('grappelli.urls')),
     path('tinymce/', include('tinymce.urls')),
 
+    path('api/v1/dashbaord/', include('Dashbaord.urls')),
+
 ] 
 
 # Add this line at the end of urls.py if DEBUG is True

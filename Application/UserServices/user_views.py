@@ -73,7 +73,8 @@ class UserCartListView(generics.ListAPIView):
 
             shipping_charge = 0
             for item in UserCartItemModel.objects.filter(cart=cart):
-                shipping_charge += item.product.shipping_charge
+                if item.product and item.product.shipping_charge:
+                    shipping_charge += item.product.shipping_charge * item.quantity
 
             total_amount += shipping_charge
 
@@ -86,6 +87,7 @@ class UserCartListView(generics.ListAPIView):
                 "shipping_charge": shipping_charge,
                 "orginal_amount": orginal_amount
             },status.HTTP_200_OK)
+            
         except Exception as e:
             return Response({
                 "message": str(e),

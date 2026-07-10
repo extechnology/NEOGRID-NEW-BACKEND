@@ -73,6 +73,7 @@ STATUS_CHOICES = (
     ('PENDING', 'Pending'),
     ('CONFIRMED', 'Confirmed'),
     ('SHIPPED', 'Shipped'),
+    ('OUT_FOR_DELIVERY', 'Out For Delivery'),
     ('DELIVERED', 'Delivered'),
     ('CANCELLED', 'Cancelled'),
 )
