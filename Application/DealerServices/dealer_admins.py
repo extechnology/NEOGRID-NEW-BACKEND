@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .dealer_models import (
-    Country, State, District, Dealers
+    Country, State, District, Dealers, WarrentyRegisterModel
 )
 
 class DistrictInline(admin.TabularInline):
@@ -41,8 +41,15 @@ class DealerAdmin(admin.ModelAdmin):
     ordering = ['-dealer_created_at']
     readonly_fields = ['unique_id']
 
+class WarrentyAdmin(admin.ModelAdmin):
+    list_display = ['fullname', 'email', 'phone', 'dealer', 'product_type', 'purchased_date']
+    list_filter = ['state', 'district', 'product_type', 'purchased_date']
+    search_fields = ['fullname', 'email', 'phone', 'serial_number', 'model_number']
+    ordering = ['-purchased_date']
+
 admin.site.register(Country, CountryAdmin)
 admin.site.register(State, StateAdmin)
 admin.site.register(District, DistrictAdmin)
 admin.site.register(Dealers, DealerAdmin)
+admin.site.register(WarrentyRegisterModel, WarrentyAdmin)
 

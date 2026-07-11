@@ -62,3 +62,12 @@ class CheckLogin(APIView):
                 {"is_logined": False, "message": "You are not logged in"},
                 status=status.HTTP_401_UNAUTHORIZED
             )
+
+class Logout(APIView):
+    def post(self, request):
+        response = Response({
+            "message": "Logout successful",
+        }, status=status.HTTP_200_OK)
+        response.delete_cookie("access")
+        response.delete_cookie("refresh")
+        return response

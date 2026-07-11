@@ -1,5 +1,6 @@
 from django.urls import path, include
-from .views import AdminLoginView, CheckLogin
+from .views import AdminLoginView, CheckLogin, Logout
+
 
 urlpatterns = [
     path('analytics/', include('Dashbaord.AnalyticsServices.analytics_urls')),
@@ -9,5 +10,5 @@ urlpatterns = [
 
     path('admin-login/', AdminLoginView.as_view(), name='admin_login'),
     path('check-login/', CheckLogin.as_view(), name='check_login'),
-
+    path('logout/', Logout.as_view(), name='logout'),
 ]

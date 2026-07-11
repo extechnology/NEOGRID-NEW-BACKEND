@@ -11,9 +11,8 @@ urlpatterns = [
     path('district/', DistrictListCreate.as_view(), name='district-list-create'),
     path('district/<int:pk>/', DistrictDetail.as_view(), name='district-detail'),
 
-    path('dealers/', DealersListCreate.as_view(), name='dealers-list-create'),
-    path('dealers/<int:pk>/', DealersDetail.as_view(), name='dealers-detail'),
+    path('list/', DealersListCreate.as_view(), name='dealers-list-create'),
+    path('list/<int:pk>/', DealersDetail.as_view(), name='dealers-detail'),
 
     path('warrenty/', WarrentyRegisterListCreate.as_view(), name='warrenty-list-create'),
-    path('warrenty/<int:pk>/', WarrentyRegisterDetail.as_view(), name='warrenty-detail'),
 ]
