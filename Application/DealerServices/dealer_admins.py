@@ -1,7 +1,5 @@
 from django.contrib import admin
-from .dealer_models import (
-    Country, State, District, Dealers, WarrentyRegisterModel
-)
+from .dealer_models import *
 
 class DistrictInline(admin.TabularInline):
     model = District
@@ -22,34 +20,39 @@ class CountryAdmin(admin.ModelAdmin):
     list_display = ['name', 'created_at']
     search_fields = ['name']
 
-class DealersInline(admin.TabularInline):
-    model = Dealers
-    extra = 1
-    # Limiting fields so the table doesn't get excessively wide in the admin
-    fields = ['dealer_name', 'dealer_type', 'dealer_email', 'dealer_phone', 'dealer_status']
 
 class DistrictAdmin(admin.ModelAdmin):
-    inlines = [DealersInline]
     list_display = ['name', 'state', 'created_at']
     list_filter = ['state__country', 'state']
     search_fields = ['name']
 
-class DealerAdmin(admin.ModelAdmin):
-    list_display = ['unique_id', 'dealer_type', 'dealer_name', 'dealer_city', 'dealer_state', 'dealer_country', 'dealer_status', 'is_main']
-    list_filter = ['dealer_type', 'dealer_status', 'is_main', 'dealer_state', 'dealer_country']
-    search_fields = ['dealer_name', 'dealer_city', 'dealer_state', 'dealer_country']
-    ordering = ['-dealer_created_at']
-    readonly_fields = ['unique_id']
-
-class WarrentyAdmin(admin.ModelAdmin):
-    list_display = ['fullname', 'email', 'phone', 'dealer', 'product_type', 'purchased_date']
-    list_filter = ['state', 'district', 'product_type', 'purchased_date']
-    search_fields = ['fullname', 'email', 'phone', 'serial_number', 'model_number']
-    ordering = ['-purchased_date']
 
 admin.site.register(Country, CountryAdmin)
 admin.site.register(State, StateAdmin)
 admin.site.register(District, DistrictAdmin)
-admin.site.register(Dealers, DealerAdmin)
-admin.site.register(WarrentyRegisterModel, WarrentyAdmin)
 
+
+class SubFranchaseInline(admin.StackedInline):
+    model = SubFranchaseModel
+    extra = 1
+
+class MainFranchaseAdmin(admin.ModelAdmin):
+    inlines = [SubFranchaseInline]
+    list_display = ['name', 'phone', 'email', 'state', 'district', 'is_available', 'created_at']
+    list_filter = ['is_available', 'state', 'district']
+    search_fields = ['name', 'email', 'phone', 'pincode']
+
+class SubFranchaseAdmin(admin.ModelAdmin):
+    list_display = ['name', 'main_franchase', 'phone', 'email', 'state', 'district', 'is_available', 'created_at']
+    list_filter = ['is_available', 'main_franchase', 'state', 'district']
+    search_fields = ['name', 'email', 'phone', 'pincode', 'main_franchase__name']
+
+admin.site.register(MainFranchaseModel, MainFranchaseAdmin)
+admin.site.register(SubFranchaseModel, SubFranchaseAdmin)
+
+class WarrentyRegisterAdmin(admin.ModelAdmin):
+    list_display = ['fullname', 'franchise', 'product_name', 'model_number', 'serial_number', 'purchased_date', 'created_at']
+    list_filter = ['franchise', 'state', 'district', 'purchased_date']
+    search_fields = ['fullname', 'email', 'phone', 'serial_number', 'model_number', 'franchise', 'product_name']
+
+admin.site.register(WarrantyRegisterModel, WarrentyRegisterAdmin)

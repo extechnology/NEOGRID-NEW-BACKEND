@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .dealer_models import Country, State, District, Dealers, WarrentyRegisterModel
+from .dealer_models import *
 
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
@@ -20,16 +20,8 @@ class DistrictSerializer(serializers.ModelSerializer):
         model = District
         fields = '__all__'
 
-class DealersSerializer(serializers.ModelSerializer):
-    district_name = serializers.CharField(source='district.name', read_only=True)
-    
-    class Meta:
-        model = Dealers
-        fields = '__all__'
 
-class WarrentyRegisterSerializer(serializers.ModelSerializer):
-    dealer_name = serializers.CharField(source='dealer.dealer_name', read_only=True)
-    
+class WarrantyRegisterSerializers(serializers.ModelSerializer):
     class Meta:
-        model = WarrentyRegisterModel
+        model = WarrantyRegisterModel
         fields = '__all__'

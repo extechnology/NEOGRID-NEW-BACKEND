@@ -11,8 +11,7 @@ urlpatterns = [
     path('district/', DistrictListCreate.as_view(), name='district-list-create'),
     path('district/<int:pk>/', DistrictDetail.as_view(), name='district-detail'),
 
-    path('list/', DealersListCreate.as_view(), name='dealers-list-create'),
-    path('list/<int:pk>/', DealersDetail.as_view(), name='dealers-detail'),
+    path('franchasies/', FranchasiessList.as_view(), name='franchasies-list'),
 
-    path('warrenty/', WarrentyRegisterListCreate.as_view(), name='warrenty-list-create'),
+    path('warranty-register/', WarrantyRegisterAPIvie.as_view(), name='warrenty-register'),
 ]

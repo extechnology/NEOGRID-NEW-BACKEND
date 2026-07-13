@@ -350,6 +350,7 @@ class CreateOrderView(APIView):
             print(total_value)
             print(request.data)
             print(address_id)
+            print('razorpay Key:',settings.RAZORPAY_KEY_ID)
             print("************************************")
 
             if not items:

@@ -7,6 +7,7 @@ urlpatterns = [
     path('order/', include('Dashbaord.OrderManagement.order_urls')),
     path('product/', include('Dashbaord.ProductManagement.product_urls')),
     path('user/', include('Dashbaord.UsersManagement.user_urls')),
+    path('dealers-warranty/', include('Dashbaord.DealersWarrantyManagement.dealers_urls')),
 
     path('admin-login/', AdminLoginView.as_view(), name='admin_login'),
     path('check-login/', CheckLogin.as_view(), name='check_login'),
