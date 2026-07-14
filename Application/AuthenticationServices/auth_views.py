@@ -11,7 +11,8 @@ from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import Q
-
+from Application.PersonalDatas.personal_models import PhoneNumbers as PhoneNumbersDataModel
+from Application.PersonalDatas.personal_serializers import PhoneNumbersSerializer
 
 import platform
 import datetime
@@ -176,14 +177,21 @@ class CheckIdentifierView(APIView):
 class RegisterView(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
-       serializer = UserRegistrationSerializer(data=request.data)
-       if serializer.is_valid():
-           serializer.save()
-           return Response({"message": "One time password sent to your email/phone for verification"}, status=status.HTTP_201_CREATED)
-       return Response({
-           'message': 'Registration failed',
-           'errors': serializer.errors
-         }, status=status.HTTP_400_BAD_REQUEST)
+        phone_number = request.data.get('phone') or request.data.get('phone_number')
+        if phone_number:
+            # Save the phone number to the new model
+            ph_serializer = PhoneNumbersSerializer(data={'phone_number': phone_number})
+            if ph_serializer.is_valid():
+                ph_serializer.save()
+                
+        serializer = UserRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "One time password sent to your email/phone for verification"}, status=status.HTTP_201_CREATED)
+        return Response({
+            'message': 'Registration failed',
+            'errors': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 # @rate_limit(key='ip', rate='1/m', block=True)
 class ResendOTPView(APIView):

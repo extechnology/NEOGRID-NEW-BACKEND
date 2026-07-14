@@ -4,3 +4,4 @@ from .UIServices.ui_admins import *
 from .UserServices.user_admins import *
 from .ProjectGalleryServices.project_admins import *
 from .DealerServices.dealer_admins import *
+from .PersonalDatas.personal_admins import *

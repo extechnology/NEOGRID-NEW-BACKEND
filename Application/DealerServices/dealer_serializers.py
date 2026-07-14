@@ -25,3 +25,17 @@ class WarrantyRegisterSerializers(serializers.ModelSerializer):
     class Meta:
         model = WarrantyRegisterModel
         fields = '__all__'
+
+class DistrictSerializerWarranty(serializers.ModelSerializer):
+    class Meta:
+        model = District
+        fields = '__all__'
+
+
+class StateSerialziersWarranty(serializers.ModelSerializer):
+    district = DistrictSerializerWarranty(many=True, read_only=True)
+
+    class Meta:
+        model = State
+        fields = '__all__'
+

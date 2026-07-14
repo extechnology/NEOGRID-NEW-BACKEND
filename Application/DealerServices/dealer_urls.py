@@ -13,5 +13,8 @@ urlpatterns = [
 
     path('franchasies/', FranchasiessList.as_view(), name='franchasies-list'),
 
+    path('product-models/', ProductModelsAPIview.as_view(), name='product-models'),
+
     path('warranty-register/', WarrantyRegisterAPIvie.as_view(), name='warrenty-register'),
+    path('state-warranty/', StateAPIview.as_view(), name='state-warranty'),
 ]

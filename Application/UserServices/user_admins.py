@@ -3,7 +3,7 @@ from django.contrib import admin
 from .user_models import (
     UserCartModel,UserCartItemModel,
     UserOrderModel,UserOrderItemModel,
-    UserAddress
+    UserAddress, ContactModel
 )
 
 
@@ -35,3 +35,10 @@ class UserAddressAdmin(admin.ModelAdmin):
     list_display = ('name', 'user', 'phone_number', 'city', 'state', 'is_default')
     list_filter = ('is_default', 'state', 'city')
     search_fields = ('name', 'user__email', 'phone_number', 'city', 'state', 'pincode')
+
+
+@admin.register(ContactModel)
+class ContactModelAdmin(admin.ModelAdmin):
+    list_display = ('name', 'phone', 'email', 'service', 'is_read', 'created_at')
+    list_filter = ('is_read', 'service')
+    search_fields = ('name', 'phone', 'email', 'service', 'message')

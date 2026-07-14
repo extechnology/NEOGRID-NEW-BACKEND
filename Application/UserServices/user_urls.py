@@ -14,4 +14,6 @@ urlpatterns = [
     path('order/create-order/', CreateOrderView.as_view(), name='create-order'),
     path('order/verify-payment/', VerifyOrderView.as_view(), name='verify-payment'),
     path('order/', UserOrderDetailAPIView.as_view(), name='user-orders'),
+    path('contact/', ContactAPIView.as_view(), name='contact'),
+
 ]

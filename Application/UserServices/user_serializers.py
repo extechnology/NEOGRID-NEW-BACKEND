@@ -5,7 +5,8 @@ from .user_models import (
     UserCartItemModel,
     UserAddress,
     UserOrderModel,
-    UserOrderItemModel
+    UserOrderItemModel,
+    ContactModel
 )
 
 from Application.ProductServices.product_models import (
@@ -170,3 +171,10 @@ class UserOrderDetailSerializerForListOrder(serializers.ModelSerializer):
             "address",
             "items",
         ]
+
+
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactModel
+        fields = "__all__"
+    

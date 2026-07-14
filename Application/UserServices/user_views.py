@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Prefetch
-
+from rest_framework.permissions import AllowAny
 from rest_framework import generics
 
 from Application.permissions import IsUserAuthenticated
@@ -13,7 +13,8 @@ from Application.AuthenticationServices.auth_models import (
 )
 
 from Application.AuthenticationServices.auth_utils import get_user_from_request
-
+from Application.PersonalDatas.personal_serializers import PhoneNumbersSerializer
+from Application.PersonalDatas.personal_models import PhoneNumbers
 
 from .user_models import (
     UserAddress,
@@ -21,6 +22,7 @@ from .user_models import (
     UserCartItemModel,
     UserOrderModel,
     UserOrderItemModel,
+    ContactModel,
 )
 
 from .user_serializers import (
@@ -34,6 +36,7 @@ from .user_serializers import (
     OrderItemSerializerForListOrder,
     OrderProductSerializerForListOrder,
     UserOrderDetailSerializerForListOrder,
+    ContactSerializer,
 )
 
 from django.conf import settings
@@ -44,7 +47,11 @@ from Application.ProductServices.product_models import (
     ProductImages
 )
 from .user_utils import generate_invoice_pdf
-from .user_mails import send_order_created_email, send_payment_failed_email
+from .user_mails import (
+    send_order_created_email, 
+    send_payment_failed_email,
+    contact_replay_mail
+    )
 
 
 class UserCartListView(generics.ListAPIView):
@@ -258,6 +265,12 @@ class AddUserAddressView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         try:
             serializer = self.get_serializer(data=request.data)
+            phone_number = request.data.get('phone_number')
+            name = request.data.get('name')
+            if phone_number and not PhoneNumbers.objects.filter(phone_number=phone_number).exists():
+                ph_serializer = PhoneNumbersSerializer(data={'phone_number': phone_number, 'name': name or request.user.username})
+                if ph_serializer.is_valid():
+                    ph_serializer.save()
             if serializer.is_valid():
                 serializer.save(user=request.user)
                 return Response({
@@ -512,3 +525,20 @@ class UserOrderDetailAPIView(generics.ListAPIView):
                 )
             )
         )
+
+
+class ContactAPIView(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        data  = request.data
+        serializer = ContactSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            contact_replay_mail(data)
+            return Response({
+                "message": "Message Sent",
+            }, status=status.HTTP_201_CREATED)
+        return Response({
+            "message": "Message Not Sent",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)

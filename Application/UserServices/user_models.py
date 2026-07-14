@@ -1,3 +1,4 @@
+from django.core.checks import model_checks
 from django.db import models
 
 from Application.ProductServices.product_models import (
@@ -123,4 +124,22 @@ class UserOrderItemModel(models.Model):
 
     def subtotal(self):
         return self.price_at_addition * self.quantity
-    
+
+
+class ContactModel(models.Model):
+    name = models.CharField(max_length =200)
+    phone = models.CharField(max_length = 100)
+    email = models.EmailField(null=True, blank = True)
+    service = models.CharField(max_length = 100)
+    message = models.TextField()
+
+    is_read = models.BooleanField(default = False)
+    created_at = models.DateTimeField(auto_now_add = True)
+    updated_at = models.DateTimeField(auto_now = True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Contact"
+        verbose_name_plural = "Contacts"

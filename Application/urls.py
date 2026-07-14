@@ -8,4 +8,6 @@ urlpatterns = [
     path('ui/', include('Application.UIServices.ui_urls')),
     path('project/', include('Application.ProjectGalleryServices.project_urls')),
     path('dealer/', include('Application.DealerServices.dealer_urls')),
+    path('personal/', include('Application.PersonalDatas.personal_urls')),
+    
 ]

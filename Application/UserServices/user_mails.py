@@ -119,3 +119,56 @@ www.neogrid.in"""
         email.attach(logo)
         
     email.send(fail_silently=True)
+
+
+def contact_replay_mail(data):
+    subject = "Thank you for contacting NEOGRID"
+    admin_email = settings.EMAIL_HOST_USER
+    text_body = f"""Hi {data['name']},
+
+Thank you for contacting NEOGRID. We have received your message and will get back to you as soon as possible.
+
+Thank you,
+
+NEOGRID
+MM 11/505-C, Mullampara,
+Manjeri, Malappuram,
+Kerala – 676121
++91 98461 31500
+info@neogrid.in
+www.neogrid.in"""
+
+    html_body = f"""
+    <div style="font-family: Arial, sans-serif; color: #333;">
+        <p>Hi {data['name']},</p>
+        <p>Thank you for contacting NEOGRID. We have received your message and will get back to you as soon as possible.</p>
+        <p>Thank you,</p>
+        <br>
+        <img src="cid:neogrid_logo" alt="NEOGRID Logo" style="width: 200px; max-width: 100%;">
+        <div style="margin-top: 20px;">
+            <strong>NEOGRID</strong><br>
+            MM 11/505-C, Mullampara,<br>
+            Manjeri, Malappuram,<br>
+            Kerala – 676121<br>
+            +91 98461 31500<br>
+            <a href="mailto:info@neogrid.in">info@neogrid.in</a><br>
+            <a href="https://www.neogrid.in">www.neogrid.in</a>
+        </div>
+    </div>
+    """
+    
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=text_body,
+        from_email=settings.EMAIL_HOST_USER,
+        to=[data['email']]
+    )
+    email.attach_alternative(html_body, "text/html")
+    
+    logo = get_logo_attachment()
+    if logo:
+        email.attach(logo)
+        
+    email.send(fail_silently=True)
+    
+    

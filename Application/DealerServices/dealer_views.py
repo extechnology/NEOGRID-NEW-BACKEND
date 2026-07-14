@@ -1,3 +1,4 @@
+from Application import ProductServices
 from Application.DealerServices.dealer_serializers import DistrictSerializer
 from rest_framework.decorators import permission_classes
 from rest_framework import generics
@@ -8,6 +9,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Q
+
+from Application.ProductServices.product_models import Product
+from Application.PersonalDatas.personal_serializers import PhoneNumbersSerializer, PhoneNumbers as UserPhoneNumber
 
 class CountryListCreate(generics.ListCreateAPIView):
     queryset = Country.objects.all()
@@ -42,6 +46,7 @@ class FranchasiessList(APIView):
     def get(self, request):
         search_query = request.GET.get('search', '').strip()
         district_query = request.GET.get('district', '').strip()
+        state_query = request.GET.get('state', '').strip()
         franchise_type = request.GET.get('type', '').strip()
 
         franchises_data = []
@@ -58,6 +63,8 @@ class FranchasiessList(APIView):
                 )
             if district_query:
                 mains = mains.filter(district__name__iexact=district_query)
+            if state_query:
+                mains = mains.filter(district__state__name__iexact=state_query)
 
             for m in mains:
                 franchises_data.append({
@@ -84,6 +91,8 @@ class FranchasiessList(APIView):
                 )
             if district_query:
                 subs = subs.filter(district__iexact=district_query)
+            if state_query:
+                subs = subs.filter(state__iexact=state_query)
 
             for s in subs:
                 franchises_data.append({
@@ -103,12 +112,57 @@ class FranchasiessList(APIView):
 class WarrantyRegisterAPIvie(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
-        serializer = WarrantyRegisterSerializers(data=request.data)
+        data = request.data.copy()
+
+        franchise_name = data.get('franchise')
+        phone = data.get('phone')
+        fullname = data.get('fullname')
+
+        if phone and not UserPhoneNumber.objects.filter(phone_number=phone).exists():
+            ph_serializer = PhoneNumbersSerializer(data={'phone_number': phone, 'name': fullname})
+            if ph_serializer.is_valid():
+                ph_serializer.save()
+
+        sub_franchise = SubFranchaseModel.objects.filter(name=franchise_name).first()
+        target_franchise = None
+        
+        if sub_franchise:
+            data['franchise'] = sub_franchise.main_franchase.name
+            target_franchise = sub_franchise
+        else:
+            main_franchise = MainFranchaseModel.objects.filter(name=franchise_name).first()
+            if main_franchise:
+                target_franchise = main_franchise
+            
+        serializer = WarrantyRegisterSerializers(data=data)
         if serializer.is_valid():
-            serializer.save()
+            warranty = serializer.save()
+            
+            if target_franchise:
+                from Application.DealerServices.dealer_mails import send_warranty_registration_email
+                send_warranty_registration_email(warranty, target_franchise)
+                
             return Response({
                 "massage": "Warranty registered successfully",
                 "status": status.HTTP_200_OK,
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class ProductModelsAPIview(APIView):
+    def get(self, request):
+        search = request.GET.get('search', '').strip()
+        if search:
+            products = Product.objects.filter(name__icontains=search).values('name', 'warranty').distinct()
+        else:
+            products = Product.objects.values('name', 'warranty').distinct()
+        
+        return Response({"status": "success", "data": list(products)}, status=status.HTTP_200_OK)
+
+class StateAPIview(APIView):
+    def get(self, request):
+        states = State.objects.prefetch_related('districts').all()
+        data = {
+            state.name: DistrictSerializerWarranty(state.districts.all(), many=True).data
+            for state in states
+        }
+        return Response(data, status=status.HTTP_200_OK)
