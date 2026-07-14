@@ -1,25 +1,26 @@
+import nested_admin
 from django.contrib import admin
 from .dealer_models import *
 
-class DistrictInline(admin.TabularInline):
+class DistrictInline(nested_admin.NestedTabularInline):
     model = District
     extra = 1
+
+class StateInline(nested_admin.NestedTabularInline):
+    model = State
+    extra = 1
+    inlines = [DistrictInline]
+
+class CountryAdmin(nested_admin.NestedModelAdmin):
+    inlines = [StateInline]
+    list_display = ['name', 'created_at']
+    search_fields = ['name']
 
 class StateAdmin(admin.ModelAdmin):
     inlines = [DistrictInline]
     list_display = ['name', 'country', 'created_at']
     list_filter = ['country']
     search_fields = ['name']
-
-class StateInline(admin.TabularInline):
-    model = State
-    extra = 1
-
-class CountryAdmin(admin.ModelAdmin):
-    inlines = [StateInline]
-    list_display = ['name', 'created_at']
-    search_fields = ['name']
-
 
 class DistrictAdmin(admin.ModelAdmin):
     list_display = ['name', 'state', 'created_at']

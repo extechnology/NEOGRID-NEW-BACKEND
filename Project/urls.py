@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('_nested_admin/', include('nested_admin.urls')),
     path('api/', include('Application.urls')),
     path('grappelli/', include('grappelli.urls')),
     path('tinymce/', include('tinymce.urls')),
