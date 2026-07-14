@@ -5,9 +5,10 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db.models import Q
+from django.conf import settings
 from Application.AuthenticationServices.auth_models import User
 from Application.AuthenticationServices.auth_views import set_auth_cookies
-
+from django.conf import settings
 
 class AdminLoginView(APIView):
     permission_classes = [AllowAny]
@@ -68,6 +69,9 @@ class Logout(APIView):
         response = Response({
             "message": "Logout successful",
         }, status=status.HTTP_200_OK)
-        response.delete_cookie("access")
-        response.delete_cookie("refresh")
+        
+        samesite = getattr(settings, 'SIMPLE_JWT_COOKIE_SAMESITE', 'Lax')
+        
+        response.delete_cookie("access_token", samesite=samesite)
+        response.delete_cookie("refresh_token", samesite=samesite)
         return response
