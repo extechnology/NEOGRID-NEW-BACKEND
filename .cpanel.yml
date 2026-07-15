@@ -11,9 +11,9 @@ deployment:
     # Note: You need to specify the path to your Python virtual environment's activation script. 
     # Update '3.12' below to whatever Python version you selected in cPanel (e.g. 3.9, 3.10)
     # Example:
-    # - source /home/czdjuaxk/virtualenv/server.neogrid.in/3.12/bin/activate && cd $DEPLOYPATH && pip install -r requirements.txt
-    # - source /home/czdjuaxk/virtualenv/server.neogrid.in/3.12/bin/activate && cd $DEPLOYPATH && python manage.py migrate
-    # - source /home/czdjuaxk/virtualenv/server.neogrid.in/3.12/bin/activate && cd $DEPLOYPATH && python manage.py collectstatic --noinput
+    - source /home/czdjuaxk/virtualenv/server.neogrid.in/3.12/bin/activate && cd $DEPLOYPATH && pip install -r requirements.txt
+    - source /home/czdjuaxk/virtualenv/server.neogrid.in/3.12/bin/activate && cd $DEPLOYPATH && python manage.py migrate
+    - source /home/czdjuaxk/virtualenv/server.neogrid.in/3.12/bin/activate && cd $DEPLOYPATH && python manage.py collectstatic --noinput
     
     # 4. Restart the Passenger app (if using Phusion Passenger on cPanel for Python apps)
     - touch $DEPLOYPATH/tmp/restart.txt
