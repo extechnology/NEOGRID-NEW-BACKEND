@@ -63,6 +63,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.username or self.email or self.phone or "User"
 
+    class Meta:
+        verbose_name = '0. User'
+        verbose_name_plural = '0. User'
+
 
 
 # ----------------------------------- End of Custom User Model and Manager -------------------------------------------------------------
