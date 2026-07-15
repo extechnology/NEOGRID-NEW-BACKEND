@@ -531,6 +531,17 @@ class ContactAPIView(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
         data  = request.data
+        
+        phone_number = data.get('phone')
+        name = data.get('name')
+
+        if phone_number and not PhoneNumbers.objects.filter(phone_number=phone_number).exists():
+            # Use data['name'] or fallback to user username if available and logged in
+            fallback_name = getattr(request.user, 'username', 'Unknown') if request.user.is_authenticated else 'Unknown'
+            ph_serializer = PhoneNumbersSerializer(data={'phone_number': phone_number, 'name': name or fallback_name})
+            if ph_serializer.is_valid():
+                ph_serializer.save()
+
         serializer = ContactSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
