@@ -19,4 +19,4 @@ deployment:
     - python manage.py migrate --noinput
 
     # Restart Passenger application
-    - touch /home/czdjuaxk/tmp/restart.txt
+    - touch /home/czdjuaxk/server.neogrid.in/tmp/restart.txt
