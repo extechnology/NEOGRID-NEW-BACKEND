@@ -5,8 +5,8 @@ from django.conf import settings
 
 
 def send_registration_otp_email(identifier, otp):
-    subject = "Your OTP Code - boatridersports@gmail.com"
-    from_email = "boatridersports@gmail.com"
+    subject = "Your OTP Code - neogridsolar@gmail.com"
+    from_email = "neogridsolar@gmail.com"
     to = [identifier]
 
     text_content = f"Your OTP for registration is: {otp}"
@@ -18,7 +18,7 @@ def send_registration_otp_email(identifier, otp):
                 <h2 style="color: #007bff; text-align: center;">Registration OTP</h2>
                 <p style="font-size: 16px; color: #333;">
                     Hello,<br><br>
-                    Thank you for registering on <b>BoatRiderSports</b> 🎉 <br>
+                    Thank you for registering on <b>Neogrid</b> 🎉 <br>
                     Please use the OTP below to complete your registration:
                 </p>
                 <div style="text-align: center; margin: 20px 0;">
@@ -30,7 +30,7 @@ def send_registration_otp_email(identifier, otp):
                     This OTP is valid for <b>10 minutes</b>. Do not share it with anyone.
                 </p>
                 <p style="font-size: 12px; color: #aaa; text-align: center; margin-top: 30px;">
-                    &copy; 2025 BoatRiderSports
+                    &copy; 2025 Neogrid
                 </p>
             </div>
         </body>
@@ -42,23 +42,23 @@ def send_registration_otp_email(identifier, otp):
     msg.send()
     
 def user_created_email(user, email):
-    subject = "Welcome to BoatRiderSports - Account Created"
-    from_email = "boatridersports@gmail.com"
+    subject = "Welcome to Neogrid - Account Created"
+    from_email = "neogridsolar@gmail.com"
     to = [email]
 
-    text_content = f"Hello {user.username},\n\nWelcome to BoatRiderSports! Your account has been successfully created."
+    text_content = f"Hello {user.username},\n\nWelcome to Neogrid! Your account has been successfully created."
 
     html_content = f""" 
     <html>
         <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
             <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                <h2 style="color: #007bff; text-align: center;">Welcome to BoatRiderSports</h2>
+                <h2 style="color: #007bff; text-align: center;">Welcome to Neogrid</h2>
                 <p style="font-size: 16px; color: #333;">
                     Hello {user.username},<br><br>
-                    Welcome to BoatRiderSports! Your account has been successfully created.
+                    Welcome to Neogrid! Your account has been successfully created.
                 </p>
                 <p style="font-size: 12px; color: #aaa; text-align: center; margin-top: 30px;">
-                    &copy; 2025 BoatRiderSports
+                    &copy; 2025 Neogrid
                 </p>
             </div>
         </body>
@@ -71,7 +71,7 @@ def user_created_email(user, email):
 
 def login_detected_email(user, email, ip_address, user_agent, login_time, notify_url_yes, notify_url_no):
     subject = "New Login Detected on Your Account"
-    from_email = "boatridersports@gmail.com"
+    from_email = "neogridsolar@gmail.com"
     to = [email]
 
     text_content = f"Hello {user.username},\n\nA new login has been detected on your account. Please log in immediately."
@@ -166,10 +166,10 @@ def login_detected_email(user, email, ip_address, user_agent, login_time, notify
                     <tr>
                         <td style="background-color: #f8fafc; padding: 30px 40px; border-top: 1px solid #e2e8f0;">
                             <p style="margin: 0 0 8px; color: #718096; font-size: 13px; text-align: center;">
-                                This is an automated security notification from BoatRiderSports.
+                                This is an automated security notification from Neogrid.
                             </p>
                             <p style="margin: 0; color: #a0aec0; font-size: 12px; text-align: center;">
-                                &copy; 2025 BoatRiderSports. All rights reserved.
+                                &copy; 2025 Neogrid. All rights reserved.
                             </p>
                         </td>
                     </tr>
@@ -188,8 +188,8 @@ def login_detected_email(user, email, ip_address, user_agent, login_time, notify
     
 
 def password_reset_success_email(user, email, new_password):
-    subject = "Password Reset - boatridersports@gmail.com"
-    from_email = "boatridersports@gmail.com"
+    subject = "Password Reset - neogridsolar@gmail.com"
+    from_email = "neogridsolar@gmail.com"
     to = [email]
 
     text_content = f"Hello {user.username},\n\nYour password has been reset successfully."
@@ -216,8 +216,8 @@ def password_reset_success_email(user, email, new_password):
 
 
 def forgot_password_otp_email(identifier, otp):
-    subject = "Your OTP Code - boatridersports@gmail.com"
-    from_email = "boatridersports@gmail.com"
+    subject = "Your OTP Code - neogridsolar@gmail.com"
+    from_email = "neogridsolar@gmail.com"
     to = [identifier]
 
     text_content = f"Your OTP for password reset is: {otp}"
@@ -229,7 +229,7 @@ def forgot_password_otp_email(identifier, otp):
                 <h2 style="color: #007bff; text-align: center;">Password Reset OTP</h2>
                 <p style="font-size: 16px; color: #333;">
                     Hello,<br><br>
-                    You requested a password reset on <b>BoatRiderSports</b>. <br>
+                    You requested a password reset on <b>Neogrid</b>. <br>
                     Please use the OTP below to complete your password reset:
                 </p>
                 <div style="text-align: center; margin: 20px 0;">
@@ -241,7 +241,7 @@ def forgot_password_otp_email(identifier, otp):
                     This OTP is valid for <b>10 minutes</b>. Do not share it with anyone.
                 </p>
                 <p style="font-size: 12px; color: #aaa; text-align: center; margin-top: 30px;">
-                    &copy; 2025 BoatRiderSports
+                    &copy; 2025 Neogrid
                 </p>
             </div>
         </body>
@@ -255,8 +255,8 @@ def forgot_password_otp_email(identifier, otp):
 
 
 def password_changed_email(user, email):
-    subject = "Password Changed Successfully - boatridersports@gmail.com"
-    from_email = "boatridersports@gmail.com"
+    subject = "Password Changed Successfully - neogridsolar@gmail.com"
+    from_email = "neogridsolar@gmail.com"
     to = [email]
 
     text_content = f"Hello {user.username},\n\nYour password has been changed successfully."
